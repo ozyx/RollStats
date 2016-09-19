@@ -71,7 +71,7 @@ var RollStats = RollStats || {
         helpMsg += "  -g, --global:         show stats for all players (default: show your stats)\n";
         helpMsg += "  -p P, --player P:     show stats for player P (default: show your stats)\n";
         helpMsg += "  -l, --leaderboard:    show player leaderboard\n";
-        helpMsg += "  -d N, --die N:        show stats for specified die size (default: all sizes)\n";
+        // helpMsg += "  -d N, --die N:        show stats for specified die size (default: all sizes)\n";
         helpMsg += "  -s, --session:        show stats for current session (default: all time)\n";
         helpMsg += "  -c, --chat:           show stats in chat (default: whisper to you)\n";
         helpMsg += "  --clear:              clear collected stats (GM only)\n";
@@ -90,10 +90,10 @@ var RollStats = RollStats || {
             player = getObj("player", playerId);
             crits = stats[playerId]['20']['20'];
             fails = stats[playerId]['20']['1'];
-            if(crits === undefined){
+            if (crits === undefined) {
                 crits = 0;
             }
-            if(fails === undefined){
+            if (fails === undefined) {
                 fails = 0;
             }
 
@@ -310,6 +310,7 @@ var RollStats = RollStats || {
         RollStats.write(tblMsg, who, "", "RS");
     },
 
+    // TODO: Refactor this mess
     handleStatsMessage: function (tokens, msg) {
         var playerId = msg.playerid,
             doLeaderboard = false,
@@ -344,8 +345,7 @@ var RollStats = RollStats || {
             switch (tokens[i]) {
                 case "-cr":
                 case "--crits":
-                    RollStats.critsAndFails(who, stats);
-                    break;
+                    return RollStats.critsAndFails(who, stats);
                 case "-h":
                 case "--help":
                     return RollStats.showHelp(msg.who, tokens[0]);
@@ -403,9 +403,9 @@ var RollStats = RollStats || {
         if (doLeaderboard) {
             RollStats.showLeaderboard(who, stats, dieSize);
         }
-        else if (dieSize > 0) {
-            RollStats.showDieStats(who, stats, dieSize, playerId);
-        }
+        // else if (dieSize > 0) {
+        //     RollStats.showDieStats(who, stats, dieSize, playerId);
+        // }
         else {
             RollStats.showSummary(who, stats, playerId);
         }
