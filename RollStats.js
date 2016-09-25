@@ -10,13 +10,17 @@ var RollStats = RollStats || {
     },
 
     processRoll: function (player, dieSize, value) {
+        'use strict';
         function updateStats(stats, dieSize, value) {
             if (dieSize <= 0) { return; }
 
+            // if this is the first roll of this die size
             if (!stats[dieSize]) { stats[dieSize] = {}; }
 
+            // increment number of rolls with rolled value
             stats[dieSize][value] = (stats[dieSize][value] || 0) + 1;
 
+            // not sure what "streak" is
             if (value != stats[dieSize].curStreakVal) {
                 stats[dieSize].curStreakVal = value;
                 stats[dieSize].curStreakLen = 0;
@@ -29,7 +33,9 @@ var RollStats = RollStats || {
             }
         }
 
+        // inititalize stats for player if this is their first roll
         if (!state.RollStats.playerStats[player]) { state.RollStats.playerStats[player] = {}; }
+        // inititalize session stats if this is player's first roll this session
         if (!RollStats.sessionStats[player]) { RollStats.sessionStats[player] = {}; }
 
         updateStats(state.RollStats.playerStats[player], dieSize, value);
@@ -40,15 +46,15 @@ var RollStats = RollStats || {
         if (!_.isArray(rolls)) { return; }
 
         for (var i = 0; i < rolls.length; i++) {
+            // regular dice roll
             if (rolls[i].type == "R") {
-                // roll; process results
-                if (rolls[i].table) { continue; }
+                if (rolls[i].table) { continue; } // ignore rolls against tables?
                 for (var j = 0; j < rolls[i].results.length; j++) {
                     RollStats.processRoll(player, rolls[i].sides, rolls[i].results[j].v);
                 }
             }
+            // group rolls
             else if (rolls[i].type == "G") {
-                // group; process group elements
                 for (var j = 0; j < rolls[i].rolls.length; j++) {
                     RollStats.processRolls(player, rolls[i].rolls[j]);
                 }
