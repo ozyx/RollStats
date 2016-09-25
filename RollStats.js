@@ -17,15 +17,15 @@ var RollStats = RollStats || {
 
             stats[dieSize][value] = (stats[dieSize][value] || 0) + 1;
 
-            if (value != stats[dieSize]['curStreakVal']) {
-                stats[dieSize]['curStreakVal'] = value;
-                stats[dieSize]['curStreakLen'] = 0;
+            if (value != stats[dieSize].curStreakVal) {
+                stats[dieSize].curStreakVal = value;
+                stats[dieSize].curStreakLen = 0;
             }
-            stats[dieSize]['curStreakLen'] = (stats[dieSize]['curStreakLen'] || 0) + 1;
+            stats[dieSize].curStreakLen = (stats[dieSize].curStreakLen || 0) + 1;
 
-            if (stats[dieSize]['curStreakLen'] > (stats[dieSize]['streakLen'] || 0)) {
-                stats[dieSize]['streakLen'] = stats[dieSize]['curStreakLen'];
-                stats[dieSize]['streakVal'] = stats[dieSize]['curStreakVal'];
+            if (stats[dieSize].curStreakLen > (stats[dieSize].streakLen || 0)) {
+                stats[dieSize].streakLen = stats[dieSize].curStreakLen;
+                stats[dieSize].streakVal = stats[dieSize].curStreakVal;
             }
         }
 
@@ -79,13 +79,12 @@ var RollStats = RollStats || {
     },
 
     critsAndFails: function (who, stats) {
-        var playerStats = {}, playerIds = [];
+        var playerStats = {};
+        var playerIds = [];
         var msg = "&{template:default} {{name=Crits & Fails}}";
         var totalCrits = 0;
         var totalFails = 0;
-        var crits = 0;
-        var fails = 0;
-        var player;
+        var crits, fails, player;
         for (var playerId in stats) {
             player = getObj("player", playerId);
             crits = stats[playerId]['20']['20'];
@@ -97,7 +96,7 @@ var RollStats = RollStats || {
                 fails = 0;
             }
 
-            msg += " {{" + player.get('_displayname') + "=";
+            msg += "{{" + player.get('_displayname') + "=";
             msg += 'Crits: ' + crits + '\n';
             msg += 'Fails: ' + fails + '\n}}';
 
@@ -172,6 +171,11 @@ var RollStats = RollStats || {
     },
 
     showDieStats: function (who, stats, dieSize, playerId) {
+
+        function calculateMean (count, total) {
+            return (Math.round((count ? total / count : 0) * 10) / 10);
+        }
+
         var header = "d" + dieSize + " Stats";
         var counts = [], total = 0, count = 0;
         var curStreakStr = "";
@@ -244,7 +248,7 @@ var RollStats = RollStats || {
             tblMsg += " {{" + i + "=" + counts[i - 1] + " (" + pct + "%), expected ";
             tblMsg += Math.round(expected) + " (" + expectedPct + "%)}}";
         }
-        tblMsg += " {{Count=" + count + "}} {{mean=" + (Math.round((count ? total / count : 0) * 10) / 10);
+        tblMsg += " {{Count=" + count + "}} {{mean=" + calculateMean(count, total);
         tblMsg += ", expected " + ((dieSize + 1) / 2) + "}}";
         if (curStreakStr) {
             tblMsg += " {{Current Streak=" + curStreakStr + "}}";
