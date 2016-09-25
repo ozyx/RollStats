@@ -1,6 +1,6 @@
+'use strict';
 var RollStats = RollStats || {
     sessionStats: {},
-    doChatCommands: true,
 
     STREAK_KEYS: ['streakLen', 'streakVal', 'curStreakLen', 'curStreakVal'],
 
@@ -10,7 +10,6 @@ var RollStats = RollStats || {
     },
 
     processRoll: function (player, dieSize, value) {
-        'use strict';
         function updateStats(stats, dieSize, value) {
             if (dieSize <= 0) { return; }
 
@@ -267,22 +266,22 @@ var RollStats = RollStats || {
 
     showSummary: function (who, stats, playerId) {
         var header = "Summary Stats";
-        var s;
+        var mergedStats;
         if (playerId) {
             // grab stats for selected player
-            s = stats[playerId] || {};
+            mergedStats = stats[playerId] || {};
             var player = getObj("player", playerId);
             header += " for " + player.get('_displayname');
         }
         else {
             // merge stats for all players
-            s = {};
-            for (var p in stats) {
-                for (var d in stats[p]) {
-                    if (!s[d]) { s[d] = {}; }
-                    for (var k in stats[p][d]) {
-                        if (RollStats.STREAK_KEYS.indexOf(k) >= 0) { continue; }
-                        s[d][k] = (s[d][k] || 0) + stats[p][d][k];
+            mergedStats = {};
+            for (var player in stats) {
+                for (var dieSize in stats[player]) {
+                    if (!mergedStats[dieSize]) { mergedStats[dieSize] = {}; }
+                    for (var value in stats[player][dieSize]) {
+                        if (RollStats.STREAK_KEYS.indexOf(value) >= 0) { continue; }
+                        mergedStats[dieSize][value] = (mergedStats[dieSize][value] || 0) + stats[player][dieSize][value];
                     }
                 }
             }
@@ -291,12 +290,12 @@ var RollStats = RollStats || {
         // generate summary data
         var dieSizes = [];
         var summary = {};
-        for (var dieSize in s) {
+        for (var dieSize in mergedStats) {
             var count = 0, total = 0;
-            for (var value in s[dieSize]) {
+            for (var value in mergedStats[dieSize]) {
                 if (RollStats.STREAK_KEYS.indexOf(value) >= 0) { continue; }
-                count += s[dieSize][value];
-                total += s[dieSize][value] * value;
+                count += mergedStats[dieSize][value];
+                total += mergedStats[dieSize][value] * value;
             }
             summary[dieSize] = {
                 'count': count,
@@ -433,21 +432,14 @@ var RollStats = RollStats || {
             }
         }
 
-        if ((RollStats.doChatCommands) && (msg.type == "api") && (msg.content.indexOf("!rollstats") == 0)) {
-            return RollStats.handleStatsMessage(msg.content.split(" "), msg);
+        if ((msg.type == "api") && (msg.content.indexOf("!rollstats") == 0)) {
+            var tokens = msg.content.split(" ");
+            return RollStats.handleStatsMessage(tokens, msg);
         }
     },
 
     registerRollStats: function () {
         RollStats.init();
-        if ((typeof (Shell) != "undefined") && (Shell) && (Shell.registerCommand)) {
-            Shell.registerCommand("!rollstats", "!rollstats [options]", "Display roll statistics", RollStats.handleStatsMessage);
-            Shell.permissionCommand(["!shell-permission", "add", "!rollstats"], { 'who': "gm" });
-            RollStats.doChatCommands = false;
-            if (Shell.write) {
-                RollStats.write = Shell.write;
-            }
-        }
         on("chat:message", RollStats.handleChatMessage);
     }
 };
